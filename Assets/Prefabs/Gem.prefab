@@ -1,0 +1,130 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &212414634170247449
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5352154710744448289}
+  - component: {fileID: 3103431203577346406}
+  - component: {fileID: 6146415144208132543}
+  - component: {fileID: 5829249484675259432}
+  m_Layer: 5
+  m_Name: Gem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &5352154710744448289
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 212414634170247449}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 88.6639, y: 80.4601}
+  m_Pivot: {x: 0.4198044, y: 0.54478264}
+--- !u!222 &3103431203577346406
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 212414634170247449}
+  m_CullTransparentMesh: 1
+--- !u!114 &6146415144208132543
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 212414634170247449}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: -1136204713778733993, guid: 2bc31e99fcf40aa4eb492072b0497290, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!114 &5829249484675259432
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 212414634170247449}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd6987c9b46cfac448747f1a0b16a0ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_curSprite: {fileID: -1136204713778733993, guid: 2bc31e99fcf40aa4eb492072b0497290, type: 3}
+  m_myImg: {fileID: 6146415144208132543}
+  positionZeroEightColumnRings:
+  - {x: 37, y: 90}
+  - {x: 61, y: 147}
+  - {x: 84.5, y: 204.5}
+  - {x: 109, y: 263}
+  - {x: 134, y: 324}
+  - {x: 157.5, y: 381}
+  - {x: 181.5, y: 440}
+  - {x: 205.8, y: 497.5}
+  widthHeightEightColumn:
+  - {x: 88.6639, y: 80.4601}
+  - {x: 133.1659, y: 98.7704}
+  - {x: 177.3334, y: 117.1723}
+  - {x: 221.4509, y: 135.3835}
+  - {x: 266.3725, y: 153.9672}
+  - {x: 310.6548, y: 172.3065}
+  - {x: 354.6835, y: 190.3793}
+  - {x: 399.0678, y: 208.7984}
+  pivotEightColumn:
+  - {x: 0.4198044, y: 0.5447826}
+  - {x: 0.4530109, y: 0.5671661}
+  - {x: 0.4695218, y: 0.5838651}
+  - {x: 0.486412, y: 0.6111252}
+  - {x: 0.5, y: 0.6411437}
+  - {x: 0.5030294, y: 0.6430899}
+  - {x: 0.5084457, y: 0.6549968}
+  - {x: 0.5105002, y: 0.6605553}
+  ringSpritesEightColumn:
+  - {fileID: -1136204713778733993, guid: 2bc31e99fcf40aa4eb492072b0497290, type: 3}
+  - {fileID: -8326712953157924977, guid: 84ef38f925deb7649a7840f4d542a893, type: 3}
+  - {fileID: 365795490736364503, guid: efc616f152c7edd4e9285c7464bb1a11, type: 3}
+  - {fileID: 1589048178568907956, guid: 3bca0afabd834824a8fd22d236170a6f, type: 3}
+  - {fileID: -8594053275500308829, guid: 641ccaeda8be9c345ad4c494e146bde9, type: 3}
+  - {fileID: -8150602239983848609, guid: 1287a15f4df982c41a378ebd067d032c, type: 3}
+  - {fileID: -4613798288580609723, guid: 7e918b5d2acce6f4dadeaad7f947e870, type: 3}
+  - {fileID: -5567979478715986132, guid: 9bc6c1fa536acd54f9eedb2f875edf29, type: 3}
+  positionZeroSixColumnRings: []
+  positionZeroFourColumnRings: []
