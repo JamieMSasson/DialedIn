@@ -116,7 +116,7 @@ public class ScoreManager : MonoBehaviour
 
             if(specialPatternCount > 0)
             {
-                Debug.Log("Special Pattern Detected!");
+                Debug.Log("Special Pattern Detected: " + specialPatternCount);
             }
             else
             {
@@ -124,7 +124,6 @@ public class ScoreManager : MonoBehaviour
                 if(matches[i][0].GetNodePosition().x == matches[i][1].GetNodePosition().x)
                 {
                     AddPatternScore(matches[i].Count-3, matches[i].Count);
-                    
                 }
                 // Otherwise it has to be a Column match
                 else
