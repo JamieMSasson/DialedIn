@@ -1,20 +1,25 @@
 using System.Collections.Generic;
+using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
 public class GemNode
 {
     // The node's Ring/Column position
-    Vector2 m_nodePosition;
+    public Vector2 m_nodePosition;
 
     // References to the neighboring GemNodes, used for matching
-    GemNode m_clockwiseNeighbor;
-    GemNode m_counterClockwiseNeighbor;
-    GemNode m_outerNeighbor;
-    GemNode m_innerNeighbor;
+    public GemNode m_clockwiseNeighbor;
+    public GemNode m_counterClockwiseNeighbor;
+    public GemNode m_outerNeighbor;
+    public GemNode m_innerNeighbor;
+
+    // Matching variables
+    private bool m_ringMatched = false;
+    private bool m_columnMatched = false;
 
     // The gem that is currently on this node
-    Gem m_curGem;
+    private Gem m_curGem;
 
     /// <summary>
     /// Debug function that displays all non-gem information on this node
@@ -134,6 +139,24 @@ public class GemNode
     }
 
     /// <summary>
+    /// Set if this node has matched in a ring, it can only be part of one ring match
+    /// </summary>
+    /// <param name="ring">Is part of a ring match?</param>
+    public void SetRingMatchStatus(bool ring)
+    {
+        m_ringMatched = ring;
+    }
+
+    /// <summary>
+    /// Set if this node has matched in a column, it can only be part of one column match
+    /// </summary>
+    /// <param name="ring">Is part of a ring match?</param>
+    public void SetColumnMatchStatus(bool column)
+    {
+        m_columnMatched = column;
+    }
+
+    /// <summary>
     /// Returns the Ring/Column position
     /// </summary>
     /// <returns></returns>
@@ -159,21 +182,25 @@ public class GemNode
     /// <param name="linkedNodes">How many nodes are currently linked by color in this chain, defaults to 0 for starting node because no chain is created yet</param>
     /// <param name="colorID">Color ID to check, defaults to -1 for the starting node to know that it should use its color</param>
     /// <returns></returns>
-    public int CheckRingMatches(List<GemNode> exploredNodes, int linkedNodes = 0, int colorID = -1)
+    public List<GemNode> CheckRingMatches(List<GemNode> exploredNodes, List<GemNode> linkedNodes = null, int colorID = -1)
     {
         // If we are the starting node, the ColorID will be -1
         // If it is, set this as the starting node and update the ColorID to the gem on this node's color
-        bool isStartingNode = false;
         if(colorID == -1)
         {
             colorID = m_curGem.GetColorID();
-            isStartingNode = true;
+            linkedNodes = new List<GemNode>();
+        }
+
+        if(m_ringMatched)
+        {
+            return linkedNodes;
         }
 
         // If the colorID matches, add to the linked nodes and explored nodes, then recur through neighbors
         if(m_curGem.GetColorID() == colorID)
         {
-            linkedNodes += 1;
+            linkedNodes.Add(this);
             exploredNodes.Add(this);
 
             // Make sure not to double-check nodes that were already explored, prevents infinite loops
@@ -192,8 +219,8 @@ public class GemNode
             }
 
             // Recur clockwise and counter-clockwise
-            int clockwiseMatches = 0;
-            int counterMatches = 0;
+            List<GemNode> clockwiseMatches = new List<GemNode>();
+            List<GemNode> counterMatches = new List<GemNode>();
             if(!clockwiseExplored)
             {
                 clockwiseMatches = m_clockwiseNeighbor.CheckRingMatches(exploredNodes, linkedNodes, colorID);
@@ -204,16 +231,9 @@ public class GemNode
                 counterMatches = m_counterClockwiseNeighbor.CheckRingMatches(exploredNodes, linkedNodes, colorID);
             }
 
-            // If we are the starting node, the linkedNodes value will be off by one, so correct for this
-            // NOTE: It is counted twice because it goes both clockwise and counter-clockwise, so it's addition gets counted twice
-            if(isStartingNode)
-            {
-                linkedNodes = (clockwiseMatches + counterMatches) - 1;
-            }
-            else
-            {
-                linkedNodes = clockwiseMatches + counterMatches;
-            }
+            linkedNodes.AddRange(clockwiseMatches);
+            linkedNodes.AddRange(counterMatches);
+            linkedNodes = linkedNodes.Distinct().ToList();
             
             return linkedNodes;
         }
@@ -230,23 +250,26 @@ public class GemNode
     /// <param name="linkedNodes">How many nodes are currently linked by color in this chain, defaults to 0 for starting node because no chain is created yet</param>
     /// <param name="colorID">Color ID to check, defaults to -1 for the starting node to know that it should use its color</param>
     /// <returns></returns>
-    public int CheckCollumnMatches(List<GemNode> exploredNodes, int linkedNodes = 0, int colorID = -1)
+    public List<GemNode> CheckCollumnMatches(List<GemNode> exploredNodes, List<GemNode> linkedNodes = null, int colorID = -1)
     {
-        bool isStartingNode = false;
-
         // If this is the starting node, meaning no Color ID has been passed through,
         // update the Color ID to this one and set that this is the starting node
         if(colorID == -1)
         {
             colorID = m_curGem.GetColorID();
-            isStartingNode = true;
+            linkedNodes = new List<GemNode>();
+        }
+
+        if(m_columnMatched)
+        {
+            return linkedNodes;
         }
 
         // If the gem on this node matches the color ID
         // increment the Linked Nodes and recur to the neighbors
         if(m_curGem.GetColorID() == colorID)
         {
-            linkedNodes += 1;
+            linkedNodes.Add(this);
             exploredNodes.Add(this);
 
             bool innerExplored = false;
@@ -263,8 +286,8 @@ public class GemNode
                 }
             }
 
-            int innerMatches = 0;
-            int outerMatches = 0;
+            List<GemNode> innerMatches = new List<GemNode>();
+            List<GemNode> outerMatches = new List<GemNode>();
             
             // Perform a null reference check because some nodes will not have inner/outer neighbors
             if(!innerExplored && m_innerNeighbor != null)
@@ -277,25 +300,9 @@ public class GemNode
                 outerMatches = m_outerNeighbor.CheckCollumnMatches(exploredNodes, linkedNodes, colorID);
             }
             
-            // If this is the starting node, the combination will be off by one
-            // NOTE: this happens because it will recur through inner and outer
-            if(isStartingNode)
-            {
-                linkedNodes = innerMatches + outerMatches;
-                // If either of the neighbors are null, we don't need to adjust because the double count doesn't occur
-                if(m_innerNeighbor != null && m_outerNeighbor != null)
-                {
-                    linkedNodes -= 1;
-                }
-            }
-            else
-            {
-                // If inner and outer matches added equal zero, we should return the base linkedNodes, skip the reassignment to zero as it will throw off the recursion
-                if(innerMatches + outerMatches != 0)
-                {
-                    linkedNodes = innerMatches + outerMatches;
-                }
-            }
+            linkedNodes.AddRange(innerMatches);
+            linkedNodes.AddRange(outerMatches);
+            linkedNodes = linkedNodes.Distinct().ToList();
 
             return linkedNodes;
         }

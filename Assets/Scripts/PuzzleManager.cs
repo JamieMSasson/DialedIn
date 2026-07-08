@@ -1,9 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.Unity.VisualStudio.Editor;
 using TMPro;
 using UnityEditor.Experimental.GraphView;
+using UnityEditor.Tilemaps;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
@@ -53,6 +55,9 @@ public class PuzzleManager : MonoBehaviour
     // Falling Variables for Animation
     bool isCollapsingColumns = false;
     bool isMatchingGems = false;
+
+    // Score Manager Variable
+    [SerializeField] private ScoreManager m_scoreManager;
 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -152,41 +157,59 @@ public class PuzzleManager : MonoBehaviour
     {
         isMatchingGems = true;
         List<GemNode> toClear = new List<GemNode>();
+        List<List<GemNode>> matches = new List<List<GemNode>>();
+        
         foreach (GemNode node in gemNodes)
         {
             // node.DisplayAllInformation(); // Debugging tool used to check status of the nodes
             
             // Recursive methods that check if the node is part of a match
             // These return the number of linked colors with neighbors: 1 if alone, 2 if maximum chain of matching colors is 2, etc.
-            int collumnMatches = node.CheckCollumnMatches(new List<GemNode>());
-            int ringMatches = node.CheckRingMatches(new List<GemNode>());
+            List<GemNode> columnMatches = node.CheckCollumnMatches(new List<GemNode>());
+            List<GemNode> ringMatches = node.CheckRingMatches(new List<GemNode>());
 
             // If there are 3 or of the same color in a row, signal a match
-            // CURRENT: Highlights the gem in a teal color
-            // TODO: Mark each gem for deletion and then loop through them after the Match Check is done to delete them
-            if (collumnMatches >= 3)
+            if (columnMatches.Count >= 3)
             {
                 //Debug.Log("Collumn Match Found at: " + node.GetNodePosition());
-                toClear.Add(node);
+                toClear.AddRange(columnMatches);
+                matches.Add(columnMatches);
+                foreach(GemNode matchNode in columnMatches)
+                {
+                    matchNode.SetColumnMatchStatus(true);
+                }
             }
 
-            if (ringMatches >= 3)
+            if (ringMatches.Count >= 3)
             {
                 //Debug.Log("Ring Match Found at: " + node.GetNodePosition());
-                toClear.Add(node);
+                toClear.AddRange(ringMatches);
+                matches.Add(ringMatches);
+                foreach(GemNode matchNode in ringMatches)
+                {
+                    matchNode.SetRingMatchStatus(true);
+                }
             }
         }
 
-        // TODO: Delete all Matched Gems and collapse gems inward
+        // Create a list of match patterns and gems to pass to the Score Manager
+        m_scoreManager.ScorePatterns(matches);
+
         toClear = toClear.Distinct().ToList();
+
+
+        // Delete all Matched Gems and collapse gems inward
         int[] columnsToCollapse = new int[numColumns];
         foreach(GemNode nodeToClear in toClear)
         {
+            m_scoreManager.AddGemScore(nodeToClear.GetGem().GetColorID());
             int columnNum = nodeToClear.ClearGem();
             columnsToCollapse[columnNum] += 1;
+            nodeToClear.SetRingMatchStatus(false);
+            nodeToClear.SetColumnMatchStatus(false);
         }
 
-        // Make this a coroutine so the player can see the stuff falling
+        // Start a coroutine to have things collapse
         if(toClear.Count > 0)
         {
             yield return new WaitForSeconds(1);
@@ -209,6 +232,13 @@ public class PuzzleManager : MonoBehaviour
             runsRemainingDisplay.text = (maxRunsAllowed - playerTotalRuns).ToString();
             yield return null;
         }
+    }
+
+    private List<int> FindPatterns(List<GemNode> matchedNodes)
+    {
+        List<int> patterns = new List<int>();
+
+        return patterns;
     }
 
     /// <summary>
@@ -630,7 +660,7 @@ public class PuzzleManager : MonoBehaviour
                 // Determine how far around the circle the player has rotated and call the appropriate amount of Rotate Ring functions to align the gems
                 int ringOffset = Mathf.RoundToInt(ringTransforms[(int)selectedNodePos.x].eulerAngles.z / (360/numColumns));
                 ringTransforms[(int)selectedNodePos.x].rotation = Quaternion.Euler(0,0,0);
-                if(ringOffset != 0)
+                if(ringOffset != 0 && ringOffset != numColumns)
                 {
                     for(int i = 0; i < Mathf.Abs(ringOffset); i++)
                     {

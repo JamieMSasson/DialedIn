@@ -1,0 +1,17 @@
+Pattern Name,Score Value,Gem Threshold For Boost,Boost Value,Upgrade Value
+Ring of 3,2,N/A,N/A,1
+Ring of 4,3,N/A,N/A,1
+Ring of 5,6,N/A,N/A,1
+Ring of 6,10,N/A,N/A,1
+Ring of 7,15,N/A,N/A,1
+Full Ring,25,N/A,N/A,1
+Column of 3,1,N/A,N/A,1
+Column of 4,2,N/A,N/A,1
+Column of 5,3,N/A,N/A,1
+Column of 6,5,N/A,N/A,1
+Column of 7,8,N/A,N/A,1
+Full Column,15,N/A,N/A,1
+Rectangle,5,2,3,1
+Square,10,7,5,1
+T-Match,6,2,2,1
+Hammer,10,3,4,1

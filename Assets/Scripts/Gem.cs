@@ -25,6 +25,8 @@ public class Gem : MonoBehaviour
     // Ring/Column position of this gem, used for visual updates
     private Vector2 m_gemLocation;
 
+    public bool markedAsChecked = false;
+
     /// <summary>
     /// Constructor for creating a new Gem
     /// </summary>
