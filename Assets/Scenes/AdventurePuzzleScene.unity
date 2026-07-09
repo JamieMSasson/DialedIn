@@ -1666,7 +1666,7 @@ MonoBehaviour:
   numRings: 8
   numColumns: 8
   gemPrefab: {fileID: 212414634170247449, guid: c19eafe16d21e014498abae866fa4300, type: 3}
-  maxMovesAllowed: 5
+  maxMovesAllowed: 100
   maxRunsAllowed: 3
   movesRemainingDisplay: {fileID: 463618418}
   runsRemainingDisplay: {fileID: 300764651}

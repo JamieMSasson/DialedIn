@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class ScoreManager : MonoBehaviour
@@ -16,6 +18,7 @@ public class ScoreManager : MonoBehaviour
     private int m_curPatternScore = 0;
     private int m_playerTotalScore = 0;
     private int m_targetScore = 1000;
+    private float m_chainMultiplier = 0;
 
     // Gem and Pattern Score Dictionary
     private Dictionary<int, int> m_dict_gemScores;
@@ -88,15 +91,24 @@ public class ScoreManager : MonoBehaviour
 
         // TODO: Add Scaling for more gems in special patterns
 
-        m_curPatternScore += patternLookup;
+        m_curPatternScore += Mathf.FloorToInt(patternLookup * m_chainMultiplier);
         ui_PatternScoreDisplay.text = m_curPatternScore.ToString();
     }
 
-    public void ScorePatterns(List<List<GemNode>> matches)
+    public void ScoreMatches(List<List<GemNode>> matches, float chainScale = 1)
     {
+        m_chainMultiplier = chainScale;
+        List<List<List<GemNode>>> specialMatches = new List<List<List<GemNode>>>();
+        bool ringRectFound = false;
+        bool columnRectFound = false;
+
         for(int i = 0; i < matches.Count; i++)
         {
-            int specialPatternCount = 0;
+            int neighborMatchesInner = 0;
+            int neighborMatchesOuter = 0;
+            int neighborMatchesClockwise = 0;
+            int neighborMatchesCounter = 0;
+            List<List<GemNode>> involvedMatches = new List<List<GemNode>>();
             foreach(GemNode node in matches[i])
             {
                 for(int j = 0; j < matches.Count; j++)
@@ -109,28 +121,171 @@ public class ScoreManager : MonoBehaviour
                     // Determine if this is a special pattern
                     if(matches[j].Contains(node))
                     {
-                        specialPatternCount += 1;
+                        involvedMatches.Add(matches[j]);
+                    }
+                    else
+                    {
+                        if(matches[j].Contains(node.m_innerNeighbor) && node.GetGem().GetColorID() == node.m_innerNeighbor.GetGem().GetColorID())
+                        {
+                            neighborMatchesInner++;
+                        }
+                        else if(matches[j].Contains(node.m_outerNeighbor) && node.GetGem().GetColorID() == node.m_outerNeighbor.GetGem().GetColorID())
+                        {
+                            neighborMatchesOuter++;
+                        }
+                        else if(matches[j].Contains(node.m_clockwiseNeighbor) && node.GetGem().GetColorID() == node.m_clockwiseNeighbor.GetGem().GetColorID())
+                        {
+                            neighborMatchesClockwise++;
+                        }
+                        else if(matches[j].Contains(node.m_counterClockwiseNeighbor) && node.GetGem().GetColorID() == node.m_counterClockwiseNeighbor.GetGem().GetColorID())
+                        {
+                            neighborMatchesCounter++;
+                        }
                     }
                 }
             }
 
-            if(specialPatternCount > 0)
+            if(involvedMatches.Count > 0)
             {
-                Debug.Log("Special Pattern Detected: " + specialPatternCount);
+                bool existingGroup = false;
+                involvedMatches.Add(matches[i]);
+                foreach(List<List<GemNode>> group in specialMatches)
+                {
+                    foreach(List<GemNode> foundMatch in involvedMatches)
+                    {
+                        if(group.Contains(foundMatch))
+                        {
+                            group.AddRange(involvedMatches);
+                            existingGroup = true;
+                            break;
+                        }
+                    }
+                    
+                }
+                if(existingGroup == false)
+                {
+                    specialMatches.Add(involvedMatches);
+                }
+                
             }
             else
             {
                 // Check if this is a ring match
                 if(matches[i][0].GetNodePosition().x == matches[i][1].GetNodePosition().x)
                 {
-                    AddPatternScore(matches[i].Count-3, matches[i].Count);
+                    // If this wasn't part of a 'special' match, use the neighbor checks to see if it is a small rect
+                    if(neighborMatchesInner == matches[i].Count || neighborMatchesOuter == matches[i].Count)
+                    {
+                        // Toggle bool to avoid double counting the same rect
+                        if(ringRectFound)
+                        {
+                            ringRectFound = false;
+                        }
+                        else
+                        {
+                            AddPatternScore(12, matches[i].Count);
+                            ringRectFound = true;
+                        }
+                    }
+                    else
+                    {
+                        AddPatternScore(matches[i].Count-3, matches[i].Count);
+                        matches.RemoveAt(i);
+                        i--;
+                    }
                 }
                 // Otherwise it has to be a Column match
                 else
                 {
-                    AddPatternScore(matches[i].Count+3, matches[i].Count);
+                    // If this wasn't part of a 'special' match, use the neighbor checks to see if it is a small rect
+                    if(neighborMatchesClockwise == matches[i].Count || neighborMatchesCounter == matches[i].Count)
+                    {
+                        // Toggle bool to avoid double counting the same rect
+                        if(columnRectFound)
+                        {
+                            columnRectFound = false;
+                        }
+                        else
+                        {
+                            AddPatternScore(12, matches[i].Count);
+                            columnRectFound = true;
+                        }
+                    }
+                    else
+                    {
+                        AddPatternScore(matches[i].Count+3, matches[i].Count);
+                        matches.RemoveAt(i);
+                        i--;
+                    }
                 }
             }
         }
+
+        if(specialMatches.Count > 0)
+        {
+            for(int i = 0; i < specialMatches.Count; i++)
+            {
+                specialMatches[i] = specialMatches[i].Distinct().ToList();
+                int totalGems = 0;
+                List<int> uniqueX = new List<int>();
+                List<int> uniqueY = new List<int>();
+
+                foreach(List<GemNode> match in specialMatches[i])
+                {
+                    totalGems += match.Count;
+                    foreach(GemNode node in match)
+                    {
+                        if(!uniqueX.Contains((int)node.GetNodePosition().x))
+                        {
+                            uniqueX.Add((int)node.GetNodePosition().x);
+                        }
+                        if(!uniqueY.Contains((int)node.GetNodePosition().y))
+                        {
+                            uniqueY.Add((int)node.GetNodePosition().y);
+                        }
+                    }
+                }
+
+                // If the count is 2 and it is special, this is a T match
+                if(specialMatches[i].Count == 2)
+                {
+                    AddPatternScore(14, totalGems);
+                }
+                // Otherwise, we'll use the # of unique X and Y points to determine the type
+                else
+                {
+                    // If the number of unique Xs and Ys add up to the number of matches, it must be a rectangle
+                    if(uniqueX.Count + uniqueY.Count == specialMatches[i].Count)
+                    {
+                        // If they are the same amount, it is a square
+                        if(uniqueX.Count == uniqueY.Count)
+                        {
+                            AddPatternScore(13, totalGems);
+                        }
+                        // Otherwise it is a rect
+                        else
+                        {
+                            AddPatternScore(12, totalGems);
+                        }
+                    }
+                    // Otherwise it is a hammer
+                    else
+                    {
+                        AddPatternScore(15, totalGems);
+                    }
+                }
+            }
+        }
+    }
+
+    public void TotalCurrentScore()
+    {
+        m_playerTotalScore = m_curGemScore * m_curPatternScore;
+        m_curGemScore = 0;
+        m_curPatternScore = 0;
+        m_chainMultiplier = 1;
+        ui_TotalPlayerScoreDisplay.text = m_playerTotalScore.ToString();
+        ui_GemScoreDisplay.text = m_curGemScore.ToString();
+        ui_PatternScoreDisplay.text = m_curPatternScore.ToString();
     }
 }

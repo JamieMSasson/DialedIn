@@ -193,7 +193,7 @@ public class PuzzleManager : MonoBehaviour
         }
 
         // Create a list of match patterns and gems to pass to the Score Manager
-        m_scoreManager.ScorePatterns(matches);
+        m_scoreManager.ScoreMatches(matches);
 
         toClear = toClear.Distinct().ToList();
 
@@ -230,6 +230,7 @@ public class PuzzleManager : MonoBehaviour
             movesRemainingDisplay.text = maxMovesAllowed.ToString();
             playerTotalRuns += 1;
             runsRemainingDisplay.text = (maxRunsAllowed - playerTotalRuns).ToString();
+            m_scoreManager.TotalCurrentScore();
             yield return null;
         }
     }
