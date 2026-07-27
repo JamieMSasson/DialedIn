@@ -1,8 +1,6 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class ScoreManager : MonoBehaviour
@@ -280,12 +278,17 @@ public class ScoreManager : MonoBehaviour
 
     public void TotalCurrentScore()
     {
-        m_playerTotalScore = m_curGemScore * m_curPatternScore;
+        m_playerTotalScore += m_curGemScore * m_curPatternScore;
         m_curGemScore = 0;
         m_curPatternScore = 0;
         m_chainMultiplier = 1;
         ui_TotalPlayerScoreDisplay.text = m_playerTotalScore.ToString();
         ui_GemScoreDisplay.text = m_curGemScore.ToString();
         ui_PatternScoreDisplay.text = m_curPatternScore.ToString();
+    }
+
+    public bool CheckWinCondition()
+    {
+        return m_playerTotalScore >= m_targetScore;
     }
 }

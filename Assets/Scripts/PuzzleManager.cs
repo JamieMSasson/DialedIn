@@ -1,15 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
-using Microsoft.Unity.VisualStudio.Editor;
 using TMPro;
-using UnityEditor.Experimental.GraphView;
-using UnityEditor.Tilemaps;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.UIElements;
-using UnityEngine.UIElements.Experimental;
+using UnityEngine.SceneManagement;
 
 public class PuzzleManager : MonoBehaviour
 {
@@ -59,10 +53,16 @@ public class PuzzleManager : MonoBehaviour
     // Score Manager Variable
     [SerializeField] private ScoreManager m_scoreManager;
 
+    // Game End Variables
+    [SerializeField] private TextMeshProUGUI ui_levelEndText;
+    [SerializeField] private GameObject m_levelEndScreen;
+    private bool m_isEndScreen = false;
+
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        Screen.SetResolution(1920, 1080, true);
         CreateNewGame();
     }
 
@@ -230,7 +230,24 @@ public class PuzzleManager : MonoBehaviour
             movesRemainingDisplay.text = maxMovesAllowed.ToString();
             playerTotalRuns += 1;
             runsRemainingDisplay.text = (maxRunsAllowed - playerTotalRuns).ToString();
+
+            // Total the score and see if the level is over
             m_scoreManager.TotalCurrentScore();
+
+            if(playerTotalRuns == maxRunsAllowed)
+            {
+                if(m_scoreManager.CheckWinCondition())
+                {
+                    ui_levelEndText.text = "YOU WIN!\nPLAY AGAIN?";
+                }
+                else
+                {
+                    ui_levelEndText.text = "YOU LOSE!\nPLAY AGAIN?";
+                    
+                }
+                m_levelEndScreen.SetActive(true);
+                m_isEndScreen = true;
+            }
             yield return null;
         }
     }
@@ -629,11 +646,19 @@ public class PuzzleManager : MonoBehaviour
 
     public void RunButtonClicked()
     {
+        if(m_isEndScreen || isMatchingGems)
+        {
+            return;
+        }
         StartCoroutine(CheckForMatches());
     }
 
     public void UndoButtonClicked()
     {
+        if(m_isEndScreen || isMatchingGems)
+        {
+            return;
+        }
         UndoPreviousMove();
     }
 
@@ -643,6 +668,10 @@ public class PuzzleManager : MonoBehaviour
         // Refresh the Puzzle
         if(Input.GetKeyDown(KeyCode.Space))
         {
+            if(m_isEndScreen)
+            {
+                return;
+            }
             RefreshAllGemNodes();
         }
 
@@ -650,12 +679,20 @@ public class PuzzleManager : MonoBehaviour
         // TODO: Hook up input system to make this work for taps too
         if(Input.GetMouseButtonDown(0))
         {
+            if(m_isEndScreen)
+            {
+                return;
+            }
             OnClick();
         }
 
         // When the player releases the mouse button, do the logic for a Ring Rotation, as the transform is just updating visually
         if(Input.GetMouseButtonUp(0))
         {
+            if(m_isEndScreen)
+            {
+                return;
+            }
             if(isRingMoveLocked)
             {
                 // Determine how far around the circle the player has rotated and call the appropriate amount of Rotate Ring functions to align the gems
@@ -700,7 +737,25 @@ public class PuzzleManager : MonoBehaviour
         // Only call the OnDrag function if the player is holding mouse/tap
         if(isMouseDown)
         {
+            if(m_isEndScreen)
+            {
+                return;
+            }
             OnDrag();
         }
+    }
+
+    public void ContinueButtonClicked()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    public void EndButtonClicked()
+    {
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.ExitPlaymode();
+#else
+        Application.Quit();
+#endif
     }
 }
