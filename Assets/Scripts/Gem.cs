@@ -21,6 +21,7 @@ public class Gem : MonoBehaviour
 
     // Color ID of this gem, used for matching
     private int m_colorID;
+    
     // Ring/Column position of this gem, used for visual updates
     private Vector2 m_gemLocation;
 

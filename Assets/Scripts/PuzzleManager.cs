@@ -150,8 +150,7 @@ public class PuzzleManager : MonoBehaviour
 
     /// <summary>
     /// Loop through the nodes of the puzzle and check for all matches
-    /// CURRENT: Each gem that is in a match will turn a light teal color
-    /// TODO: Delete each gem that is in a match and collapse all other affected gems inward
+    /// Delete each gem that is in a match and collapse all other affected gems inward
     /// </summary>
     private IEnumerator CheckForMatches()
     {
@@ -250,13 +249,6 @@ public class PuzzleManager : MonoBehaviour
             }
             yield return null;
         }
-    }
-
-    private List<int> FindPatterns(List<GemNode> matchedNodes)
-    {
-        List<int> patterns = new List<int>();
-
-        return patterns;
     }
 
     /// <summary>

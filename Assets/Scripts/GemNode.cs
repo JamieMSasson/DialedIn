@@ -70,7 +70,6 @@ public class GemNode
         int oldColorID = m_curGem.GetColorID();
         m_curGem.SetColorID(newColorID);
         return oldColorID;
-        
     }
 
     /// <summary>
