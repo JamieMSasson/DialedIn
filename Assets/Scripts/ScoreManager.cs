@@ -25,6 +25,12 @@ public class ScoreManager : MonoBehaviour
     // Gem and Pattern Text Data Assets
     [SerializeField] private TextAsset m_data_patternScores;
 
+    // Gem and Match Information
+    private List<int> m_colorsInMatches;
+
+    // List of (Pattern Type, Num Gems)
+    private List<Vector2> m_matchTypesAndSizes;
+
     /// <summary>
     /// Load in the base score values for Gems and Patterns
     /// TODO: Make pattern scores read a CSV or some other file for ease of editing
@@ -60,6 +66,8 @@ public class ScoreManager : MonoBehaviour
         ui_PatternScoreDisplay.text = m_curPatternScore.ToString();
         ui_TotalPlayerScoreDisplay.text = m_playerTotalScore.ToString();
         ui_TargetScoreDisplay.text = m_targetScore.ToString();
+        m_colorsInMatches = new List<int>();
+        m_matchTypesAndSizes = new List<Vector2>();
         InitializeDictionaries();
     }
 
@@ -74,6 +82,11 @@ public class ScoreManager : MonoBehaviour
         m_dict_gemScores.TryGetValue(gemColorID, out perGemScore);
         m_curGemScore += perGemScore;
         ui_GemScoreDisplay.text = m_curGemScore.ToString();
+
+        if(!m_colorsInMatches.Contains(gemColorID))
+        {
+            m_colorsInMatches.Add(gemColorID);
+        }
     }
 
     /// <summary>
@@ -90,6 +103,24 @@ public class ScoreManager : MonoBehaviour
         // TODO: Add Scaling for more gems in special patterns
 
         m_curPatternScore += Mathf.FloorToInt(patternLookup * m_chainMultiplier);
+        ui_PatternScoreDisplay.text = m_curPatternScore.ToString();
+
+        m_matchTypesAndSizes.Add(new Vector2(patternID, numGems));
+    }
+
+    /// <summary>
+    /// Adds Gem Score, Pattern Score, or Multiplies Pattern by a Scale from a Mod
+    /// </summary>
+    /// <param name="gemScore">Gem Score to Add</param>
+    /// <param name="patternScore">Pattern Score to Add</param>
+    /// <param name="patternScale">Scalar to multiply the Pattern Score by</param>
+    public void AddModScore(int gemScore, int patternScore, float patternScale)
+    {
+        m_curGemScore += gemScore;
+        m_curPatternScore += patternScore;
+        m_curPatternScore = Mathf.FloorToInt(patternScale * m_curPatternScore);
+
+        ui_GemScoreDisplay.text = m_curGemScore.ToString();
         ui_PatternScoreDisplay.text = m_curPatternScore.ToString();
     }
 
@@ -290,5 +321,15 @@ public class ScoreManager : MonoBehaviour
     public bool CheckWinCondition()
     {
         return m_playerTotalScore >= m_targetScore;
+    }
+
+    public List<int> GetMatchedColors()
+    {
+        return m_colorsInMatches;
+    }
+
+    public List<Vector2> GetMatchesAndSizes()
+    {
+        return m_matchTypesAndSizes;
     }
 }

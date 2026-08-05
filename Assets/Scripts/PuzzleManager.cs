@@ -58,12 +58,17 @@ public class PuzzleManager : MonoBehaviour
     [SerializeField] private GameObject m_levelEndScreen;
     private bool m_isEndScreen = false;
 
+    // TEMP Mod Variables
+    public ModData testMod;
+
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         Screen.SetResolution(1920, 1080, true);
         CreateNewGame();
+        ModsManager.Instance.SetScoreManager(m_scoreManager);
+        ModsManager.Instance.AddMod(testMod);
     }
 
     /// <summary>
@@ -231,6 +236,7 @@ public class PuzzleManager : MonoBehaviour
             runsRemainingDisplay.text = (maxRunsAllowed - playerTotalRuns).ToString();
 
             // Total the score and see if the level is over
+            ModsManager.Instance.TriggerScoreMods();
             m_scoreManager.TotalCurrentScore();
 
             if(playerTotalRuns == maxRunsAllowed)
